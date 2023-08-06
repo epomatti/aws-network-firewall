@@ -40,7 +40,7 @@ resource "aws_route_table" "firewall" {
 resource "aws_subnet" "firewall" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.0.0/24"
-  availability_zone = var.az
+  availability_zone = var.az1
 
   # CKV_AWS_130
   map_public_ip_on_launch = true
@@ -65,16 +65,29 @@ resource "aws_route_table" "public" {
   }
 }
 
-resource "aws_subnet" "public" {
+resource "aws_subnet" "public1" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.10.0/24"
-  availability_zone = var.az
+  availability_zone = var.az1
 
   # CKV_AWS_130
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "subnet-${var.workload}-pub"
+    Name = "subnet-${var.workload}-pub1"
+  }
+}
+
+resource "aws_subnet" "public2" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.11.0/24"
+  availability_zone = var.az2
+
+  # CKV_AWS_130
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "subnet-${var.workload}-pub2"
   }
 }
 
@@ -90,7 +103,7 @@ resource "aws_route_table" "private" {
 resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.100.0/24"
-  availability_zone = var.az
+  availability_zone = var.az1
 
   tags = {
     Name = "subnet-${var.workload}-priv"
@@ -102,8 +115,13 @@ resource "aws_route_table_association" "firewall" {
   route_table_id = aws_route_table.firewall.id
 }
 
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
+resource "aws_route_table_association" "public1" {
+  subnet_id      = aws_subnet.public1.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table_association" "public2" {
+  subnet_id      = aws_subnet.public2.id
   route_table_id = aws_route_table.public.id
 }
 

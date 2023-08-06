@@ -6,8 +6,8 @@ output "subnet_firewall_id" {
   value = aws_subnet.firewall.id
 }
 
-output "subnet_public_id" {
-  value = aws_subnet.public.id
+output "public_subnets" {
+  value = [aws_subnet.public1.id, aws_subnet.public2.id]
 }
 
 output "subnet_private_id" {
