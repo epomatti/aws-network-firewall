@@ -23,12 +23,6 @@ module "network" {
   # az2      = local.az2
 }
 
-module "firewall" {
-  source = "./modules/firewall"
-  workload = var.workload
-  vpc_id = module.network.vpc_id
-  subnet = module.network.firewall_subnet
-}
 
 # module "nat-gateway" {
 #   source   = "./modules/nat-gateway"
