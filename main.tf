@@ -23,6 +23,14 @@ module "network" {
   # az2      = local.az2
 }
 
+module "server" {
+  source   = "./modules/server"
+  workload = var.workload
+  vpc_id   = module.network.vpc_id
+  subnet   = module.network.public_subnets[0]
+  az       = local.az1
+}
+
 
 # module "nat-gateway" {
 #   source   = "./modules/nat-gateway"
