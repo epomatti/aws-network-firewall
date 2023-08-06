@@ -1,10 +1,7 @@
 ### VPC ###
-
 resource "aws_vpc" "main" {
-  cidr_block       = "10.0.0.0/16"
-  instance_tenancy = "default"
-
-  # Enable DNS hostnames 
+  cidr_block           = "10.0.0.0/16"
+  instance_tenancy     = "default"
   enable_dns_hostnames = true
 
   tags = {
@@ -13,7 +10,6 @@ resource "aws_vpc" "main" {
 }
 
 ### Internet Gateway ###
-
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
@@ -23,7 +19,6 @@ resource "aws_internet_gateway" "main" {
 }
 
 ### Firewall Subnet ###
-
 resource "aws_route_table" "firewall" {
   vpc_id = aws_vpc.main.id
 
@@ -42,7 +37,6 @@ resource "aws_subnet" "firewall" {
   cidr_block        = "10.0.0.0/24"
   availability_zone = var.az1
 
-  # CKV_AWS_130
   map_public_ip_on_launch = true
 
   tags = {
@@ -51,7 +45,6 @@ resource "aws_subnet" "firewall" {
 }
 
 ### Public Subnet ###
-
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -70,7 +63,6 @@ resource "aws_subnet" "public1" {
   cidr_block        = "10.0.10.0/24"
   availability_zone = var.az1
 
-  # CKV_AWS_130
   map_public_ip_on_launch = true
 
   tags = {
@@ -78,18 +70,17 @@ resource "aws_subnet" "public1" {
   }
 }
 
-resource "aws_subnet" "public2" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.11.0/24"
-  availability_zone = var.az2
+# resource "aws_subnet" "public2" {
+#   vpc_id            = aws_vpc.main.id
+#   cidr_block        = "10.0.11.0/24"
+#   availability_zone = var.az2
 
-  # CKV_AWS_130
-  map_public_ip_on_launch = true
+#   map_public_ip_on_launch = true
 
-  tags = {
-    Name = "subnet-${var.workload}-pub2"
-  }
-}
+#   tags = {
+#     Name = "subnet-${var.workload}-pub2"
+#   }
+# }
 
 ### Private Subnet ###
 
@@ -120,10 +111,10 @@ resource "aws_route_table_association" "public1" {
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "public2" {
-  subnet_id      = aws_subnet.public2.id
-  route_table_id = aws_route_table.public.id
-}
+# resource "aws_route_table_association" "public2" {
+#   subnet_id      = aws_subnet.public2.id
+#   route_table_id = aws_route_table.public.id
+# }
 
 resource "aws_route_table_association" "private" {
   subnet_id      = aws_subnet.private.id
