@@ -5,5 +5,5 @@ variable "region" {
 
 variable "workload" {
   type    = string
-  default = "globalcorp"
+  default = "mycorporation"
 }
