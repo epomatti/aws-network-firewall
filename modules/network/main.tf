@@ -24,16 +24,6 @@ resource "aws_default_route_table" "default" {
   route                  = []
 }
 
-
-### Internet Gateway ###
-resource "aws_internet_gateway" "main" {
-  vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "ig-${var.workload}"
-  }
-}
-
 ### Firewall ###
 resource "aws_networkfirewall_firewall" "main" {
   name                = "firewall-${var.workload}"
@@ -58,6 +48,49 @@ resource "aws_networkfirewall_firewall_policy" "main" {
   }
 }
 
+# resource "aws_networkfirewall_rule_group" "example" {
+#   capacity = 100
+#   name     = "example"
+#   type     = "STATEFUL"
+#   rule_group {
+#     rules_source {
+#       rules_source_list {
+#         generated_rules_type = "DENYLIST"
+#         target_types         = ["HTTP_HOST"]
+#         targets              = ["test.example.com"]
+#       }
+#     }
+#   }
+# }
+
+### Routes ###
+
+locals {
+  fw_vpce = tolist(aws_networkfirewall_firewall.main.firewall_status[0].sync_states)[0].attachment[0].endpoint_id
+}
+
+### Internet Gateway ###
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "ig-${var.workload}"
+  }
+}
+
+resource "aws_route_table" "igw" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block      = local.cidr_block_subnet_pub1
+    vpc_endpoint_id = local.fw_vpce
+  }
+
+  tags = {
+    Name = "rt-${var.workload}-igw"
+  }
+}
+
 
 ### Firewall Subnet ###
 resource "aws_route_table" "firewall" {
@@ -67,11 +100,6 @@ resource "aws_route_table" "firewall" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main.id
   }
-
-  # route {
-  #   cidr_block = "0.0.0.0/0"
-  #   network_interface_id = aws_networkfirewall_firewall.main.firewall_status[0].sync_states
-  # }
 
   tags = {
     Name = "rt-${var.workload}-firewall"
@@ -95,8 +123,8 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main.id
+    cidr_block      = "0.0.0.0/0"
+    vpc_endpoint_id = local.fw_vpce
   }
 
   tags = {
@@ -147,10 +175,16 @@ resource "aws_subnet" "public1" {
 #   }
 # }
 
+resource "aws_route_table_association" "gateway" {
+  gateway_id     = aws_internet_gateway.main.id
+  route_table_id = aws_route_table.igw.id
+}
+
 resource "aws_route_table_association" "firewall" {
   subnet_id      = aws_subnet.fw1.id
   route_table_id = aws_route_table.firewall.id
 }
+
 
 resource "aws_route_table_association" "public1" {
   subnet_id      = aws_subnet.public1.id
