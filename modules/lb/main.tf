@@ -23,15 +23,6 @@ resource "aws_iam_role_policy_attachment" "ssm-managed-instance-core" {
 }
 
 ### EC2 ###
-# resource "aws_network_interface" "main" {
-#   subnet_id       = var.subnet
-#   security_groups = [aws_security_group.server.id]
-
-#   tags = {
-#     Name = "ni-${var.workload}"
-#   }
-# }
-
 resource "aws_iam_instance_profile" "main" {
   name = "profile-${var.workload}"
   role = aws_iam_role.main.id
@@ -68,28 +59,13 @@ resource "aws_security_group_rule" "egress_server" {
 }
 
 ### Launch Template ###
-
-# resource "aws_launch_configuration" "main" {
-#   name_prefix   = "launchconfig-${var.workload}"
-#   image_id      = "ami-08fdd91d87f63bb09"
-#   instance_type = "t4g.nano"
-
-#   iam_instance_profile = aws_iam_instance_profile.main.name
-#   security_groups      = [aws_security_group.server.id]
-#   user_data            = file("${path.module}/userdata.sh")
-
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
-
 resource "aws_launch_template" "main" {
   name = "template-server-${var.workload}"
 
-  image_id               = "ami-08fdd91d87f63bb09"
-  instance_type          = "t4g.nano"
-  vpc_security_group_ids = [aws_security_group.server.id]
-  user_data              = file("${path.module}/userdata.sh")
+  image_id      = "ami-08fdd91d87f63bb09"
+  instance_type = "t4g.nano"
+  # vpc_security_group_ids = [aws_security_group.server.id]
+  user_data = filebase64("${path.module}/userdata.sh")
 
   iam_instance_profile {
     arn = aws_iam_instance_profile.main.arn
@@ -107,11 +83,8 @@ resource "aws_launch_template" "main" {
 
   network_interfaces {
     associate_public_ip_address = true
+    security_groups             = [aws_security_group.server.id]
   }
-
-  # placement {
-  #   availability_zone = var.azs[0]
-  # }
 }
 
 ### ALB ###
@@ -147,9 +120,12 @@ resource "aws_lb_target_group" "main" {
 
 resource "aws_autoscaling_group" "default" {
   name = "asg-${var.workload}"
+
   launch_template {
-    id = aws_launch_template.main.id
+    id      = aws_launch_template.main.id
+    version = "$Latest"
   }
+  
   min_size            = 1
   max_size            = 1
   desired_capacity    = 1
