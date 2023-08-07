@@ -110,7 +110,7 @@ resource "aws_networkfirewall_rule_group" "ip_drop" {
       stateful_rule {
         action = "DROP"
         header {
-          destination      = local.cidr_block_vpc
+          destination      = "0.0.0.0/0"
           destination_port = "ANY"
           direction        = "ANY"
           protocol         = "TCP"
