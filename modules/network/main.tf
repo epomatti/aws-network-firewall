@@ -45,23 +45,27 @@ resource "aws_networkfirewall_firewall_policy" "main" {
   firewall_policy {
     stateless_default_actions          = ["aws:pass"]
     stateless_fragment_default_actions = ["aws:drop"]
+
+    stateful_rule_group_reference {
+      resource_arn = aws_networkfirewall_rule_group.stateful.arn
+    }
   }
 }
 
-# resource "aws_networkfirewall_rule_group" "example" {
-#   capacity = 100
-#   name     = "example"
-#   type     = "STATEFUL"
-#   rule_group {
-#     rules_source {
-#       rules_source_list {
-#         generated_rules_type = "DENYLIST"
-#         target_types         = ["HTTP_HOST"]
-#         targets              = ["test.example.com"]
-#       }
-#     }
-#   }
-# }
+resource "aws_networkfirewall_rule_group" "stateful" {
+  capacity = 100
+  name     = "stateful-deny"
+  type     = "STATEFUL"
+  rule_group {
+    rules_source {
+      rules_source_list {
+        generated_rules_type = "DENYLIST"
+        target_types         = ["HTTP_HOST"]
+        targets              = ["httpbin.org"]
+      }
+    }
+  }
+}
 
 ### Routes ###
 
