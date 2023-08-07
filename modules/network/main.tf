@@ -24,7 +24,37 @@ resource "aws_default_route_table" "default" {
   route                  = []
 }
 
-### Firewall ###
+### CloudWatch Logs ###
+resource "aws_cloudwatch_log_group" "alert" {
+  name = "firewall/alert"
+}
+
+resource "aws_cloudwatch_log_group" "flow" {
+  name = "firewall/flow"
+}
+
+### Network Firewall ###
+
+resource "aws_networkfirewall_logging_configuration" "main" {
+  firewall_arn = aws_networkfirewall_firewall.main.arn
+  logging_configuration {
+    log_destination_config {
+      log_destination = {
+        logGroup = aws_cloudwatch_log_group.alert.name
+      }
+      log_destination_type = "CloudWatchLogs"
+      log_type             = "ALERT"
+    }
+    log_destination_config {
+      log_destination = {
+        logGroup = aws_cloudwatch_log_group.flow.name
+      }
+      log_destination_type = "CloudWatchLogs"
+      log_type             = "FLOW"
+    }
+  }
+}
+
 resource "aws_networkfirewall_firewall" "main" {
   name                = "firewall-${var.workload}"
   firewall_policy_arn = aws_networkfirewall_firewall_policy.main.arn
@@ -49,6 +79,10 @@ resource "aws_networkfirewall_firewall_policy" "main" {
     stateful_rule_group_reference {
       resource_arn = aws_networkfirewall_rule_group.httpbin_deny.arn
     }
+
+    stateful_rule_group_reference {
+      resource_arn = aws_networkfirewall_rule_group.ip_drop.arn
+    }
   }
 }
 
@@ -62,6 +96,31 @@ resource "aws_networkfirewall_rule_group" "httpbin_deny" {
         generated_rules_type = "DENYLIST"
         target_types         = ["HTTP_HOST", "TLS_SNI"]
         targets              = ["httpbin.org"]
+      }
+    }
+  }
+}
+
+resource "aws_networkfirewall_rule_group" "ip_drop" {
+  capacity = 100
+  name     = "drop-by-ip"
+  type     = "STATEFUL"
+  rule_group {
+    rules_source {
+      stateful_rule {
+        action = "DROP"
+        header {
+          destination      = local.cidr_block_vpc
+          destination_port = "ANY"
+          direction        = "ANY"
+          protocol         = "TCP"
+          source           = var.ip_to_drop
+          source_port      = "ANY"
+        }
+        rule_option {
+          keyword  = "sid"
+          settings = ["1"]
+        }
       }
     }
   }

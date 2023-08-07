@@ -21,6 +21,7 @@ module "network" {
   workload = var.workload
   az1      = local.az1
   # az2      = local.az2
+  ip_to_drop = var.ip_to_drop
 }
 
 module "server" {

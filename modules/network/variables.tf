@@ -13,3 +13,7 @@ variable "az1" {
 # variable "az2" {
 #   type = string
 # }
+
+variable "ip_to_drop" {
+  type = string
+}
