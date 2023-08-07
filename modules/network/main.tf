@@ -47,14 +47,14 @@ resource "aws_networkfirewall_firewall_policy" "main" {
     stateless_fragment_default_actions = ["aws:drop"]
 
     stateful_rule_group_reference {
-      resource_arn = aws_networkfirewall_rule_group.stateful.arn
+      resource_arn = aws_networkfirewall_rule_group.httpbin_deny.arn
     }
   }
 }
 
-resource "aws_networkfirewall_rule_group" "stateful" {
+resource "aws_networkfirewall_rule_group" "httpbin_deny" {
   capacity = 100
-  name     = "stateful-deny"
+  name     = "httpbin-deny"
   type     = "STATEFUL"
   rule_group {
     rules_source {
@@ -68,7 +68,6 @@ resource "aws_networkfirewall_rule_group" "stateful" {
 }
 
 ### Routes ###
-
 locals {
   fw_vpce = tolist(aws_networkfirewall_firewall.main.firewall_status[0].sync_states)[0].attachment[0].endpoint_id
 }
