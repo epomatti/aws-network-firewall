@@ -1,4 +1,4 @@
-### Locals
+### Locals ###
 locals {
   cidr_block_vpc = "10.0.0.0/16"
 
@@ -25,29 +25,23 @@ resource "aws_default_route_table" "default" {
 }
 
 ### CloudWatch Logs ###
-resource "aws_cloudwatch_log_group" "alert" {
-  name = "firewall/alert"
+resource "aws_cloudwatch_log_group" "default" {
+  name = "firewall"
 }
-
-resource "aws_cloudwatch_log_group" "flow" {
-  name = "firewall/flow"
-}
-
-### Network Firewall ###
 
 resource "aws_networkfirewall_logging_configuration" "main" {
   firewall_arn = aws_networkfirewall_firewall.main.arn
   logging_configuration {
     log_destination_config {
       log_destination = {
-        logGroup = aws_cloudwatch_log_group.alert.name
+        logGroup = aws_cloudwatch_log_group.default.name
       }
       log_destination_type = "CloudWatchLogs"
       log_type             = "ALERT"
     }
     log_destination_config {
       log_destination = {
-        logGroup = aws_cloudwatch_log_group.flow.name
+        logGroup = aws_cloudwatch_log_group.default.name
       }
       log_destination_type = "CloudWatchLogs"
       log_type             = "FLOW"
@@ -55,6 +49,7 @@ resource "aws_networkfirewall_logging_configuration" "main" {
   }
 }
 
+### Network Firewall ###
 resource "aws_networkfirewall_firewall" "main" {
   name                = "firewall-${var.workload}"
   firewall_policy_arn = aws_networkfirewall_firewall_policy.main.arn
@@ -73,7 +68,7 @@ resource "aws_networkfirewall_firewall_policy" "main" {
   name = "policy-${var.workload}"
 
   firewall_policy {
-    stateless_default_actions          = ["aws:pass"]
+    stateless_default_actions          = ["aws:forward_to_sfe"]
     stateless_fragment_default_actions = ["aws:drop"]
 
     stateful_rule_group_reference {
