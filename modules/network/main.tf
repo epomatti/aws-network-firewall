@@ -60,7 +60,7 @@ resource "aws_networkfirewall_rule_group" "httpbin_deny" {
     rules_source {
       rules_source_list {
         generated_rules_type = "DENYLIST"
-        target_types         = ["HTTP_HOST"]
+        target_types         = ["HTTP_HOST", "TLS_SNI"]
         targets              = ["httpbin.org"]
       }
     }
