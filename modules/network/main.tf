@@ -112,7 +112,7 @@ resource "aws_route_table_association" "fw3" {
 
 ### Network Firewall ###
 resource "aws_networkfirewall_firewall" "main" {
-  name                = "${var.workload}-firewall"
+  name                = "${var.workload}-firewall" # FIXME: rename
   firewall_policy_arn = var.firewall_policy_arn
   vpc_id              = aws_vpc.main.id
 
@@ -275,20 +275,6 @@ resource "aws_nat_gateway" "nat3" {
   depends_on = [aws_internet_gateway.main]
 }
 
-resource "aws_nat_gateway_eip_association" "nat1" {
-  allocation_id  = aws_eip.nat1.id
-  nat_gateway_id = aws_nat_gateway.nat1.id
-}
-
-resource "aws_nat_gateway_eip_association" "nat2" {
-  allocation_id  = aws_eip.nat2.id
-  nat_gateway_id = aws_nat_gateway.nat2.id
-}
-
-resource "aws_nat_gateway_eip_association" "nat3" {
-  allocation_id  = aws_eip.nat3.id
-  nat_gateway_id = aws_nat_gateway.nat3.id
-}
 
 ### Private Subnets ###
 resource "aws_subnet" "priv1" {
@@ -351,19 +337,19 @@ resource "aws_route_table" "priv3" {
 resource "aws_route" "private_nat_1" {
   route_table_id         = aws_route_table.priv1.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_nat_gateway.nat1.id
+  nat_gateway_id         = aws_nat_gateway.nat1.id
 }
 
 resource "aws_route" "private_nat_2" {
   route_table_id         = aws_route_table.priv2.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_nat_gateway.nat2.id
+  nat_gateway_id         = aws_nat_gateway.nat2.id
 }
 
 resource "aws_route" "private_nat_3" {
   route_table_id         = aws_route_table.priv3.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_nat_gateway.nat3.id
+  nat_gateway_id         = aws_nat_gateway.nat3.id
 }
 
 resource "aws_route_table_association" "priv_nat_1" {
