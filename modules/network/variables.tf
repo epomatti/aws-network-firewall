@@ -1,19 +1,11 @@
-variable "region" {
-  type = string
-}
-
 variable "workload" {
   type = string
 }
 
-variable "az1" {
+variable "aws_region" {
   type = string
 }
 
-# variable "az2" {
-#   type = string
-# }
-
-variable "ip_to_drop" {
+variable "firewall_policy_arn" {
   type = string
 }

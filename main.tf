@@ -1,36 +1,42 @@
 terraform {
   required_providers {
     aws = {
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
+      version = ">= 6.0.0"
     }
   }
 }
 
-provider "aws" {
-  region = var.region
+module "cloudwatch" {
+  source = "./modules/cloudwatch"
 }
 
-locals {
-  az1 = "${var.region}a"
-  # az2 = "${var.region}b"
-}
-
-module "network" {
-  source   = "./modules/network"
-  region   = var.region
-  workload = var.workload
-  az1      = local.az1
-  # az2      = local.az2
+module "firewall_policies" {
+  source     = "./modules/firewall/policies"
+  workload   = var.workload
   ip_to_drop = var.ip_to_drop
 }
 
-module "server" {
-  source   = "./modules/server"
-  workload = var.workload
-  vpc_id   = module.network.vpc_id
-  subnet   = module.network.public_subnets[0]
-  az       = local.az1
+module "network" {
+  source              = "./modules/network"
+  workload            = var.workload
+  aws_region          = var.aws_region
+  firewall_policy_arn = module.firewall_policies.firewall_policy_arn
 }
+
+module "firewall_logging" {
+  source                    = "./modules/firewall/logging"
+  firewall_arn              = module.network.firewall_arn
+  cloudwatch_log_group_name = module.cloudwatch.firewll_cloudwatch_log_group_name
+}
+
+# module "server" {
+#   source   = "./modules/server"
+#   workload = var.workload
+#   vpc_id   = module.network.vpc_id
+#   subnet   = module.network.public_subnets[0]
+#   az       = local.az1
+# }
 
 
 # module "nat-gateway" {

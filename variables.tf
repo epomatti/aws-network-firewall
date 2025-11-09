@@ -1,14 +1,22 @@
-variable "region" {
-  type    = string
-  default = "us-east-2"
+# Project
+variable "aws_region" {
+  type = string
 }
 
 variable "workload" {
-  type    = string
-  default = "corpx"
+  type = string
 }
 
+# Firewall
 variable "ip_to_drop" {
-  type    = string
-  default = "1.2.3.4/32"
+  type = string
+}
+
+# Servers
+variable "server_ami" {
+  type = string
+}
+
+variable "server_instance_type" {
+  type = string
 }

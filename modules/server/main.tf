@@ -7,13 +7,13 @@ resource "aws_instance" "server" {
   ami           = "ami-08fdd91d87f63bb09"
   instance_type = "t4g.nano"
 
-  associate_public_ip_address = true
+  associate_public_ip_address = false
   subnet_id                   = var.subnet
   vpc_security_group_ids      = [aws_security_group.server.id]
 
   availability_zone    = var.az
   iam_instance_profile = aws_iam_instance_profile.server.id
-  user_data            = file("${path.module}/userdata.sh")
+  user_data            = file("${path.module}/user_data/ubuntu.sh")
 
   metadata_options {
     http_endpoint = "enabled"
