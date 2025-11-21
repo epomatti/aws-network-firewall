@@ -30,6 +30,17 @@ module "firewall_logging" {
   cloudwatch_log_group_name = module.cloudwatch.firewll_cloudwatch_log_group_name
 }
 
+module "iam_server" {
+  source   = "./modules/iam/server"
+  workload = var.workload
+}
+
+# module "instance_profile" {
+#   source              = "./modules/ec2/profile"
+#   workload            = var.workload
+#   server_iam_role_arn = module.iam_server.server_iam_role_arn
+# }
+
 # module "server" {
 #   source   = "./modules/server"
 #   workload = var.workload
@@ -46,9 +57,9 @@ module "firewall_logging" {
 # }
 
 # module "lb" {
-#   source   = "./modules/lb"
+#   source   = "./modules/elb"
 #   workload = var.workload
 #   vpc_id   = module.network.vpc_id
 #   subnets  = module.network.public_subnets
-#   azs      = [local.az1, local.az2]
+#   azs      = module.network.availability_zones
 # }
